@@ -4,6 +4,24 @@ A WIP proof of concept app that uses ElasticSearch as the consumer to get tweets
 
 ## Usage
 
+Set up your environment variables by renaming `.env.example` to `.env`
+
+Create an account with [ElasticSearch](https://www.elastic.co/) and obtain your consumer + access keys/secrets from [Twitter Developers](https://developer.twitter.com/)
+
+```bash
+CONSUMER_API_KEY=
+CONSUMER_API_SECRET=
+CONSUMER_BEARER_TOKEN=
+ACCESS_TOKEN=
+ACCESS_TOKEN_SECRET=
+
+ELASTIC_SEARCH_ACCESS_KEY=
+ELASTIC_SEARCH_ACCESS_SECRET=
+ELASTIC_SEARCH_HOSTNAME=
+ELASTIC_SEARCH_USERNAME=
+ELASTIC_SEARCH_PASSWORD=
+```
+
 Run [Consumer.java](./src/main/java/consumers/Consumer.java)
 
 ### Output
