@@ -1,6 +1,5 @@
 package consumers;
 
-import com.google.gson.JsonParser;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -11,6 +10,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
@@ -67,7 +67,7 @@ public class Consumer {
     properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
     properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
     properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
-    properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "5");
+    properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "200");
 
     KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(properties);
     consumer.subscribe(Collections.singletonList(topic));
@@ -86,7 +86,10 @@ public class Consumer {
     while (true) {
       try {
         ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-        logger.info("Received " + records.count() + " records.");
+        int noOfRecords = records.count();
+        logger.info("Received " + noOfRecords + " records.");
+        BulkRequest bulkRequest = new BulkRequest();
+
         for (ConsumerRecord<String, String> record : records) {
           // Extract twitter messages from each record value.
           String jsonStringPayload = record.value();
@@ -94,14 +97,19 @@ public class Consumer {
           IndexRequest request =
               new IndexRequest("twitter", twitterTopic, id)
                   .source(jsonStringPayload, XContentType.JSON);
-          client.index(request, RequestOptions.DEFAULT);
+          bulkRequest.add(request);
           logger.info(id);
-          sleepInMilliseconds(10);
         }
-        logger.info("Committing offsets ...");
-        consumer.commitSync();
-        logger.info("Offsets have now been committed.");
-        sleepInMilliseconds(1500);
+
+        if (noOfRecords > 0) {
+          client.bulk(bulkRequest, RequestOptions.DEFAULT);
+          logger.info("Committing offsets ...");
+          consumer.commitSync();
+
+          logger.info(noOfRecords + " offsets have now been committed.");
+          sleepInMilliseconds(1500);
+        }
+
       } catch (Exception e) {
         logger.error("An exception occurred: ", e);
       }
