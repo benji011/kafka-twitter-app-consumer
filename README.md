@@ -49,3 +49,37 @@ Check response from ElasticSearch API using GET
   }
 }
 ```
+
+### Cleaning up
+
+To remove all committed messages from ES, just send a `POST` request and delete by match all.
+
+```json
+# POST /twitter/tweets/_delete_by_query?conflicts=proceed
+{
+  "query": {
+    "match_all": {}
+  }
+}
+```
+
+Sample response:
+```json
+{
+  "took": 415,
+  "timed_out": false,
+  "total": 23,
+  "deleted": 23,
+  "batches": 1,
+  "version_conflicts": 0,
+  "noops": 0,
+  "retries": {
+    "bulk": 0,
+    "search": 0
+  },
+  "throttled_millis": 0,
+  "requests_per_second": -1,
+  "throttled_until_millis": 0,
+  "failures": []
+}
+```

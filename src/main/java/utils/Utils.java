@@ -28,4 +28,17 @@ public class Utils {
   public static String generateId(ConsumerRecord<String, String> record) {
     return record.topic() + "_" + record.partition() + "_" + record.offset() + "_";
   }
+
+  /**
+   * A sleep function
+   *
+   * @param milliseconds Milliseconds represented as an int
+   */
+  public static void sleepInMilliseconds(int milliseconds) {
+    try {
+      Thread.sleep(milliseconds);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
 }
