@@ -87,18 +87,24 @@ public class Consumer {
       try {
         ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
         int noOfRecords = records.count();
+        int noOfRecordsSkipped = 0;
         logger.info("Received " + noOfRecords + " records.");
         BulkRequest bulkRequest = new BulkRequest();
 
         for (ConsumerRecord<String, String> record : records) {
           // Extract twitter messages from each record value.
           String jsonStringPayload = record.value();
-          String id = generateId(record) + extractIdStrFromTweet(jsonStringPayload);
-          IndexRequest request =
-              new IndexRequest("twitter", twitterTopic, id)
-                  .source(jsonStringPayload, XContentType.JSON);
-          bulkRequest.add(request);
-          logger.info(id);
+          try {
+            String id = generateId(record) + extractIdStrFromTweet(jsonStringPayload);
+            IndexRequest request =
+                new IndexRequest("twitter", twitterTopic, id)
+                    .source(jsonStringPayload, XContentType.JSON);
+            bulkRequest.add(request);
+            logger.info(id);
+          } catch (NullPointerException e) {
+            noOfRecordsSkipped += 1;
+            logger.warn("id_str doesn't exist! Record skipped.");
+          }
         }
 
         if (noOfRecords > 0) {
@@ -106,7 +112,10 @@ public class Consumer {
           logger.info("Committing offsets ...");
           consumer.commitSync();
 
-          logger.info(noOfRecords + " offsets have now been committed.");
+          logger.info(noOfRecords + " offsets have now been committed");
+          if (noOfRecordsSkipped > 0) {
+            logger.info(noOfRecordsSkipped + " offsets were skipped");
+          }
           sleepInMilliseconds(1500);
         }
 
