@@ -87,7 +87,7 @@ public class Consumer {
     KafkaConsumer<String, String> consumer = createConsumer(twitterTopic);
     // Poll in for new data
     // TODO: refactor while loop
-    // gSee:
+    // See:
     // https://kafka.apache.org/11/javadoc/index.html?org/apache/kafka/clients/consumer/KafkaConsumer.html
     while (true) {
       try {
