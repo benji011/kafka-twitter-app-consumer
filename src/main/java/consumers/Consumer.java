@@ -74,6 +74,10 @@ public class Consumer {
     return consumer;
   }
 
+  /**
+   * @param args
+   * @throws IOException
+   */
   public static void main(String[] args) throws IOException {
     String twitterTopic = "tweets";
 
@@ -82,6 +86,9 @@ public class Consumer {
 
     KafkaConsumer<String, String> consumer = createConsumer(twitterTopic);
     // Poll in for new data
+    // TODO: refactor while loop
+    // gSee:
+    // https://kafka.apache.org/11/javadoc/index.html?org/apache/kafka/clients/consumer/KafkaConsumer.html
     while (true) {
       try {
         ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
