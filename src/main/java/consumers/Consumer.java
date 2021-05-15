@@ -82,7 +82,6 @@ public class Consumer {
 
     KafkaConsumer<String, String> consumer = createConsumer(twitterTopic);
     // Poll in for new data
-    // TODO: Refactor later. Still just a WIP.
     while (true) {
       try {
         ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
